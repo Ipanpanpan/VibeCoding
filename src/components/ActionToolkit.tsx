@@ -7,9 +7,10 @@ import { Mail, Copy, Check, Download, Share2, ShieldAlert } from 'lucide-react';
 interface ActionToolkitProps {
   result: AnalysisResult;
   rawMessage: string;
+  compact?: boolean;
 }
 
-export function ActionToolkit({ result, rawMessage }: ActionToolkitProps) {
+export function ActionToolkit({ result, rawMessage, compact = false }: ActionToolkitProps) {
   const [copiedAdvice, setCopiedAdvice] = useState(false);
   const [copiedReport, setCopiedReport] = useState(false);
 
@@ -80,7 +81,7 @@ ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
         <span>Incident Action & Reporting Toolkit</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+      <div className={`grid grid-cols-1 gap-2.5 ${compact ? '' : 'sm:grid-cols-3'}`}>
         {/* Report to Deriv Security */}
         <button
           onClick={handleMailtoReport}
@@ -118,7 +119,7 @@ ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
         </button>
       </div>
 
-      <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
         <span>Need to copy raw report for support tickets?</span>
         <button
           onClick={handleCopyReport}

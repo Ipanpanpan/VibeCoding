@@ -14,7 +14,7 @@ import { Footer } from '@/components/Footer';
 import { PRESET_MESSAGES } from '@/lib/presets';
 import { analyzeMessageLocally } from '@/lib/detector';
 import { AnalysisResult, PresetMessage } from '@/types/analyzer';
-import { ArrowDownRight, ArrowUpRight, LockKeyhole, SearchCheck, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, ClipboardCheck, LockKeyhole, SearchCheck, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
   const [message, setMessage] = useState<string>(PRESET_MESSAGES[0].text);
@@ -111,7 +111,7 @@ export default function Home() {
 
       <main className="flex-1 w-full">
         <section className="hero-section border-b border-slate-200 dark:border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 grid lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
             <div className="max-w-2xl">
               <div className="eyebrow mb-5"><span className="eyebrow-dot" /> A safer way to check</div>
               <h1 className="hero-title">Pause before you <span>trust that message.</span></h1>
@@ -124,11 +124,29 @@ export default function Home() {
               </div>
               <p className="mt-7 text-xs text-slate-500 dark:text-slate-400">Built for the GDG KL DevFest 2026 Deriv challenge. Never enter your password or OTP here.</p>
             </div>
-            <div className="hero-visual" aria-hidden="true">
-              <div className="hero-orbit hero-orbit-one" /><div className="hero-orbit hero-orbit-two" />
-              <div className="hero-shield"><ShieldCheck strokeWidth={1.25} /></div>
-              <div className="hero-float hero-float-top"><LockKeyhole className="w-5 h-5" /><span>Keep your account secure</span></div>
-              <div className="hero-float hero-float-bottom"><SearchCheck className="w-5 h-5" /><span>Check before you act</span><ArrowDownRight className="w-4 h-4 ml-3" /></div>
+            <div className="hero-bento" aria-label="How the message checker works">
+              <div className="hero-bento-card hero-bento-feature">
+                <ShieldCheck className="w-9 h-9" strokeWidth={1.5} aria-hidden="true" />
+                <span className="hero-bento-step">Your safety comes first</span>
+                <strong>Stop. Check. Stay in control.</strong>
+                <p>Never share a password or one-time code with someone who contacts you.</p>
+              </div>
+              <div className="hero-bento-card">
+                <SearchCheck className="w-6 h-6 text-[#ff444f]" aria-hidden="true" />
+                <span className="hero-bento-step">01 / Inspect</span>
+                <strong>Spot warning signs</strong>
+                <p>See risky links, urgent demands, and requests for sensitive details.</p>
+              </div>
+              <div className="hero-bento-card">
+                <ClipboardCheck className="w-6 h-6 text-emerald-500" aria-hidden="true" />
+                <span className="hero-bento-step">02 / Verify</span>
+                <strong>Know what to do</strong>
+                <p>Follow a short checklist before you respond or click.</p>
+              </div>
+              <div className="hero-bento-card hero-bento-wide">
+                <LockKeyhole className="w-6 h-6 text-[#ff444f]" aria-hidden="true" />
+                <div><span className="hero-bento-step">03 / Act safely</span><strong>Contact Deriv through its official site.</strong></div>
+              </div>
             </div>
           </div>
         </section>
@@ -138,30 +156,20 @@ export default function Home() {
             <div><div className="eyebrow mb-3"><span className="eyebrow-dot" /> Message checker</div><h2>Check the signs. Take the next step.</h2></div>
             <p>Choose an example or paste a message you received. Your result appears below with practical steps to verify it.</p>
           </div>
-          <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start">
-            <PresetSelector selectedPresetId={selectedPresetId} onSelectPreset={handleSelectPreset} />
-            <MessageInput value={message} onChange={handleMessageChange} onAnalyze={handleAnalyze} isLoading={isLoading} hasCustomKey={Boolean(geminiApiKey)} />
+          <div className="grid lg:grid-cols-12 gap-5 items-start">
+            <div className="lg:col-span-7"><MessageInput value={message} onChange={handleMessageChange} onAnalyze={handleAnalyze} isLoading={isLoading} hasCustomKey={Boolean(geminiApiKey)} /></div>
+            <div className="lg:col-span-5"><PresetSelector selectedPresetId={selectedPresetId} onSelectPreset={handleSelectPreset} /></div>
           </div>
 
         {/* Dynamic Analysis Results */}
         {result && (
           <div className="space-y-6 animate-fade-in pt-8 border-t border-slate-200 dark:border-slate-800">
             <div className="section-heading"><div><div className="eyebrow mb-3"><span className="eyebrow-dot" /> Analysis result</div><h2>What this message tells us</h2></div><p>Use these signals as a guide. Always confirm through Deriv&apos;s official website or support.</p></div>
-            {/* Risk Score Gauge */}
-            <RiskScoreGauge result={result} />
-
-            {/* Two Column Layout for Breakdown & Verification Checklist */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Red Flags, Explanations & Links (7 cols) */}
-              <div className="lg:col-span-7 space-y-6">
-                <AnalysisBreakdown result={result} />
-              </div>
-
-              {/* Right Column: Verification Checklist & Toolkit (5 cols) */}
-              <div className="lg:col-span-5 space-y-6">
-                <VerificationChecklist />
-                <ActionToolkit result={result} rawMessage={message} />
-              </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              <div className="lg:col-span-7"><RiskScoreGauge result={result} /></div>
+              <div className="lg:col-span-5"><ActionToolkit result={result} rawMessage={message} compact /></div>
+              <div className="lg:col-span-7"><AnalysisBreakdown result={result} /></div>
+              <div className="lg:col-span-5"><VerificationChecklist /></div>
             </div>
           </div>
         )}
