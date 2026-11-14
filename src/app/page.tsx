@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { PresetSelector } from '@/components/PresetSelector';
 import { MessageInput } from '@/components/MessageInput';
@@ -24,6 +24,8 @@ export default function Home() {
   const [geminiApiKey, setGeminiApiKey] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
+  const riskScoreRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToResult = useRef(false);
 
   // Initialize with Preset 1 analyzed on initial render
   useEffect(() => {
@@ -41,6 +43,21 @@ export default function Home() {
       // ignore
     }
   }, []);
+
+  useEffect(() => {
+    if (isLoading || !result || !shouldScrollToResult.current) return;
+
+    const frame = requestAnimationFrame(() => {
+      shouldScrollToResult.current = false;
+      riskScoreRef.current?.focus({ preventScroll: true });
+      riskScoreRef.current?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [isLoading, result]);
 
   const handleSelectPreset = (preset: PresetMessage) => {
     setMessage(preset.text);
@@ -70,6 +87,7 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (!message.trim()) return;
 
+    shouldScrollToResult.current = true;
     setIsLoading(true);
 
     try {
@@ -166,7 +184,7 @@ export default function Home() {
           <div className="space-y-6 animate-fade-in pt-8 border-t border-slate-200 dark:border-slate-800">
             <div className="section-heading"><div><div className="eyebrow mb-3"><span className="eyebrow-dot" /> Analysis result</div><h2>What this message tells us</h2></div><p>Use these signals as a guide. Always confirm through Deriv&apos;s official website or support.</p></div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-              <div className="lg:col-span-7"><RiskScoreGauge result={result} /></div>
+              <div ref={riskScoreRef} tabIndex={-1} className="lg:col-span-7 scroll-mt-24 outline-none"><RiskScoreGauge result={result} /></div>
               <div className="lg:col-span-5"><ActionToolkit result={result} rawMessage={message} compact /></div>
               <div className="lg:col-span-7"><AnalysisBreakdown result={result} /></div>
               <div className="lg:col-span-5"><VerificationChecklist /></div>
