@@ -20,9 +20,9 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
           textColor: 'text-[#ff444f]',
           bgColor: 'bg-red-500/10',
           borderColor: 'border-red-500/30',
-          badgeBg: 'bg-[#ff444f] text-white',
+          badgeBg: 'bg-[#ff444f] text-white shadow-[#ff444f]/30',
           glowClass: 'glow-red',
-          icon: <AlertOctagon className="w-6 h-6 text-[#ff444f]" />,
+          icon: <AlertOctagon className="w-4 h-4 text-white shrink-0" />,
           recommendation: 'DO NOT ENGAGE: High probability of account credential compromise or wallet fraud.',
         };
       case 'SUSPICIOUS':
@@ -31,9 +31,9 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
           textColor: 'text-amber-500',
           bgColor: 'bg-amber-500/10',
           borderColor: 'border-amber-500/30',
-          badgeBg: 'bg-amber-500 text-white',
+          badgeBg: 'bg-amber-500 text-white shadow-amber-500/30',
           glowClass: 'glow-amber',
-          icon: <AlertTriangle className="w-6 h-6 text-amber-500" />,
+          icon: <AlertTriangle className="w-4 h-4 text-white shrink-0" />,
           recommendation: 'EXERCISE CAUTION: Inspect links and verify with official live chat before responding.',
         };
       default:
@@ -42,9 +42,9 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
           textColor: 'text-emerald-500',
           bgColor: 'bg-emerald-500/10',
           borderColor: 'border-emerald-500/30',
-          badgeBg: 'bg-emerald-500 text-white',
+          badgeBg: 'bg-emerald-500 text-white shadow-emerald-500/30',
           glowClass: 'glow-emerald',
-          icon: <ShieldCheck className="w-6 h-6 text-emerald-500" />,
+          icon: <ShieldCheck className="w-4 h-4 text-white shrink-0" />,
           recommendation: 'SAFE PATTERN: Matches authentic communication protocols and official Deriv guidelines.',
         };
     }
@@ -122,7 +122,7 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span>
-                Engine: {engineUsed === 'hybrid' ? 'Gemini 1.5 Flash + Heuristics' : 'Real-Time Heuristic Pattern Scanner'}
+                Engine: {engineUsed === 'hybrid' || engineUsed === 'gemini-ai' ? 'Google Gemini 1.5 Flash AI + Pattern Scanner' : 'Real-Time Heuristic Pattern Scanner (0ms Latency)'}
               </span>
             </div>
           </div>

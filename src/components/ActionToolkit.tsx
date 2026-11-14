@@ -59,7 +59,7 @@ ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
   const handleMailtoReport = () => {
     const subject = encodeURIComponent(`[Phishing Alert Report] Suspicious Deriv Message Detected (${result.badgeText})`);
     const body = encodeURIComponent(generateReportText());
-    window.open(`mailto:security@deriv.com?subject=${subject}&body=${body}`, '_blank');
+    window.location.href = `mailto:security@deriv.com?subject=${subject}&body=${body}`;
   };
 
   const handleDownloadReport = () => {

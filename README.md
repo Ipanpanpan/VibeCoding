@@ -4,7 +4,7 @@
 > *"Help Customers Recognize a Suspicious Message: A customer receives a message from someone claiming to be support. Build a message-checking tool that points out warning signs and tells the customer how to check safely before acting."*
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-[![Tests Passing](https://img.shields.io/badge/tests-10%2F10%20passing-brightgreen)](https://github.com)
+[![Tests Passing](https://img.shields.io/badge/tests-13%2F13%20passing-brightgreen)](https://github.com)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2%20App%20Router-black)](https://nextjs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%203.4-38bdf8)](https://tailwindcss.com)
 
@@ -42,7 +42,7 @@ Or connect your GitHub repository to Vercel. Everything is pre-configured with z
 ### 2. Interactive User Experience
 - **⚡ 1-Click Test Presets**:
   - **Preset 1**: Urgent Account Suspension & Telegram OTP Lure (*High Risk Scam*)
-  - **Preset 2**: Fake $250 VIP Deposit Bonus on `.vip` link (*Suspicious Phishing*)
+  - **Preset 2**: Fake $250 VIP Deposit Bonus on `.xyz` link (*Suspicious Phishing*)
   - **Preset 3**: Legitimate Deriv Monthly Statement (*Verified Safe*)
   - **Preset 4**: 100% Win Rate Signal Bot Scam (*High Risk Scam*)
   - **Preset 5**: Official 2FA Login Notification (*Verified Safe*)
@@ -97,21 +97,24 @@ npm run dev
 
 ## 🧪 Testing Record
 
-Deriv TrustGuard includes a 10-test automated verification suite (`tests/detector.test.ts`):
+Deriv TrustGuard includes a 13-test automated verification suite (`tests/detector.test.ts`):
 ```bash
 npm test
 ```
 **Test Coverage:**
 1. Empty or whitespace input handling
 2. Preset 1 — Urgent Account Suspension & Telegram OTP lure
-3. Preset 2 — Fake $250 VIP Deposit Bonus
+3. Preset 2 — Fake $250 VIP Deposit Bonus on `.xyz` link
 4. Preset 3 — Legitimate Deriv monthly statement
 5. Preset 4 — 100% Win Rate Signal Bot Scam with WhatsApp and seed phrase
 6. Preset 5 — Official 2FA Login Notification
-7. `extractUrls` parser domain extraction with trailing punctuation
-8. Deceptive domain masquerading (`deriv.com.attacker.com`)
-9. High-volume fuzzing / long input handling
-10. Case-insensitivity & mixed case evasion attempts
+7. `extractUrls` parser strips quotes, brackets, and trailing punctuation
+8. Deceptive domain masquerading (`deriv.com.attacker.com`) and zero safe indicator leaks
+9. IDN Homoglyph / Punycode anti-spoofing detection (e.g. Cyrillic 'і' in `derіv.com`)
+10. Strict `isOfficialDerivUrl` & `isOfficialDerivDomain` validator
+11. Generic benign text does not claim it directs to official Deriv domains
+12. High-volume fuzzing / long input boundary handling
+13. Case-insensitivity & mixed case evasion attempts
 
 ---
 

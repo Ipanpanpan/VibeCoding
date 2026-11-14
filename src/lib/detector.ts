@@ -1,6 +1,6 @@
 import { AnalysisResult, RedFlag, RiskLevel } from '../types/analyzer';
 
-const OFFICIAL_DERIV_DOMAINS = [
+export const OFFICIAL_DERIV_DOMAINS = [
   'deriv.com',
   'app.deriv.com',
   'smarttrader.deriv.com',
@@ -10,20 +10,55 @@ const OFFICIAL_DERIV_DOMAINS = [
   'deriv.be',
 ];
 
-const SUSPICIOUS_TLDS = [
+export const SUSPICIOUS_TLDS = [
   '.xyz', '.top', '.vip', '.club', '.buzz', '.work',
   '.rest', '.cam', '.cfd', '.click', '.monster', '.live',
-  '.online', '.site', '.tk', '.ml', '.ga', '.cf', '.gq'
+  '.online', '.site', '.tk', '.ml', '.ga', '.cf', '.gq',
+  '.cc', '.icu', '.fit', '.biz', '.loan', '.store'
 ];
 
-const URL_SHORTENERS = [
+export const URL_SHORTENERS = [
   'bit.ly', 'tinyurl.com', 't.co', 'cutt.ly', 'is.gd', 'rb.gy', 'ow.ly'
 ];
 
+export function isOfficialDerivDomain(hostname: string): boolean {
+  if (!hostname) return false;
+  const cleanHost = hostname.toLowerCase().trim();
+  // Reject punycode or homoglyphs pretending to be deriv
+  if (cleanHost.startsWith('xn--') || cleanHost.includes('.xn--')) return false;
+  return OFFICIAL_DERIV_DOMAINS.some(domain =>
+    cleanHost === domain || cleanHost.endsWith(`.${domain}`)
+  );
+}
+
+export function isOfficialDerivUrl(urlStr: string): boolean {
+  try {
+    const clean = urlStr.trim().replace(/^["'<(\[]+/, '').replace(/["'>)\].,;!?]+$/, '');
+    const hasScheme = clean.startsWith('http://') || clean.startsWith('https://');
+    const parsed = new URL(hasScheme ? clean : `https://${clean}`);
+
+    // Official Deriv portals always require HTTPS
+    if (parsed.protocol !== 'https:') return false;
+
+    return isOfficialDerivDomain(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function extractUrls(text: string): string[] {
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.(?:xyz|top|vip|club|buzz|work|online|site|com|net|org|io|ly|co|me|be|app)[^\s]*)/gi;
+  // Regex to extract URLs or domain names
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.(?:xyz|top|vip|club|buzz|work|online|site|com|net|org|io|ly|co|me|be|app|cc|icu|biz)[^\s]*)/gi;
   const matches = text.match(urlRegex) || [];
-  return Array.from(new Set(matches.map(u => u.replace(/[.,;!?)]+$/, ''))));
+
+  const cleanedUrls = matches.map(u => {
+    // Strip wrapping quotes, brackets, parens, and trailing punctuation
+    return u
+      .replace(/^[\s"'`<(\[]+/, '')
+      .replace(/[\s"'`>)\].,;!?]+$/, '');
+  }).filter(u => u.length > 3);
+
+  return Array.from(new Set(cleanedUrls));
 }
 
 export function analyzeMessageLocally(rawText: string): AnalysisResult {
@@ -55,9 +90,9 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
 
   // 1. Check for Urgency & Coercive Language
   const urgencyPatterns = [
-    { regex: /(frozen|suspended|terminated|disabled|restricted)\s+within\s+(\d+|one|two|24|48)?\s*(hours?|hrs?|minutes?|days?)/i, label: 'Suspension / Freeze Deadline' },
-    { regex: /\[?(urgent|immediate action required|final notice|account alert|security alert)\]?/i, label: 'Urgent Threat Header' },
-    { regex: /(act now|without delay|before it'?s too late|prevent permanent (suspension|closure|deletion)|to avoid (suspension|termination)|(verify|reply|contact|send|click)\s+immediately|immediately\s+(verify|reply|contact|send|click|transfer))/i, label: 'High-Pressure Coercion' },
+    { regex: /(frozen|suspended|terminated|disabled|restricted|locked|closed|blocked|deactivated)\s+within\s+(\d+|one|two|24|48)?\s*(hours?|hrs?|minutes?|days?)/i, label: 'Suspension / Freeze Deadline' },
+    { regex: /\[?(urgent|immediate action required|final notice|account alert|security alert|action required|warning)\]?/i, label: 'Urgent Threat Header' },
+    { regex: /(act now|without delay|before it'?s too late|prevent permanent (suspension|closure|deletion|restriction)|to avoid (suspension|termination|closure|restriction)|(verify|reply|contact|send|click)\s+immediately|immediately\s+(verify|reply|contact|send|click|transfer))/i, label: 'High-Pressure Coercion' },
     { regex: /(unusual withdrawal|unauthorized (login|activity)|security breach|suspicious transaction)\s+(on|attempt|detected)/i, label: 'Fabricated Security Panic' },
   ];
 
@@ -84,9 +119,9 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
 
   // 2. Check for Credential / OTP / 2FA Harvesting
   const credentialPatterns = [
-    { regex: /(send|provide|reply with|share|enter|give|input)\s+(your\s+)?(6-digit\s+)?(account\s+)?(verification\s+)?(otp|one-time password|verification code|security code|2fa|sms code)/i, label: 'OTP / Verification Code Request' },
-    { regex: /(seed phrase|secret recovery phrase|private key|master password)/i, label: 'Private Key / Seed Phrase Request' },
-    { regex: /(password|pin|trading password|account pin)\s+(verification|confirmation|to continue)/i, label: 'Password / PIN Request' },
+    { regex: /(send|provide|reply with|share|enter|give|input)\s+(your\s+)?(6-digit\s+)?(account\s+)?(verification\s+)?(otp|one-time password|verification code|security code|2fa|sms code|6-digit code|auth code|password|pin)/i, label: 'OTP / Verification Code Request' },
+    { regex: /(seed phrase|secret recovery phrase|private key|master password|mnemonic phrase)/i, label: 'Private Key / Seed Phrase Request' },
+    { regex: /(password|pin|trading password|account pin)\s+(verification|confirmation|to continue|to cancel|to resolve)/i, label: 'Password / PIN Request' },
   ];
 
   const credentialMatches: string[] = [];
@@ -113,6 +148,10 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
 
   // 3. Domain & URL Inspection
   const suspiciousUrls: string[] = [];
+  const homoglyphUrls: string[] = [];
+  const mimicUrls: string[] = [];
+  const externalUrls: string[] = [];
+  const officialUrls: string[] = [];
   let containsLegitDerivDomain = false;
 
   for (const url of urls) {
@@ -130,38 +169,76 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
       hostname = cleanUrl;
     }
 
-    const isOfficial = OFFICIAL_DERIV_DOMAINS.some(domain => 
-      hostname === domain || hostname.endsWith(`.${domain}`)
-    );
+    // Check for Punycode / Homoglyph attack (e.g. Cyrillic letters spoofing deriv.com)
+    const isHomoglyph = hostname.startsWith('xn--') || hostname.includes('.xn--') || /[^\x00-\x7F]/.test(url);
+    if (isHomoglyph) {
+      homoglyphUrls.push(url);
+      continue;
+    }
+
+    const isOfficial = isOfficialDerivDomain(hostname) && !isHttpOnly;
 
     if (isOfficial) {
       containsLegitDerivDomain = true;
+      officialUrls.push(url);
     } else {
       // Check if it mimics Deriv (typosquatting / deceptive domain)
       const mimicsDeriv = cleanUrl.includes('deriv') || cleanUrl.includes('drv') || cleanUrl.includes('binary');
-      if (mimicsDeriv || hasSuspiciousTld || isShortener || isHttpOnly) {
+      if (mimicsDeriv) {
+        mimicUrls.push(url);
+      } else if (hasSuspiciousTld || isShortener || isHttpOnly) {
         suspiciousUrls.push(url);
+      } else {
+        externalUrls.push(url);
       }
     }
   }
 
-  if (suspiciousUrls.length > 0) {
+  // Homoglyph Spoofing Red Flag
+  if (homoglyphUrls.length > 0) {
+    riskScore += 40;
+    redFlags.push({
+      id: 'homoglyph-spoofing',
+      label: 'IDN Homoglyph Spoofing Attack Detected',
+      category: 'domain',
+      severity: 'high',
+      description: `URL uses lookalike Unicode / Punycode characters to visually masquerade as Deriv while directing to a malicious server: ${homoglyphUrls.join(', ')}`,
+      matchedSnippets: homoglyphUrls,
+    });
+    detailedAnalysis.push(`Detected punycode/homoglyph character masquerading attack: ${homoglyphUrls.join(', ')}.`);
+    officialAdvice.push('Be cautious of lookalike internationalized characters (IDN homoglyphs). Official Deriv domains use standard ASCII Latin characters.');
+  }
+
+  // Deceptive / Unofficial Deriv Mimic
+  const badUrls = Array.from(new Set(mimicUrls.concat(suspiciousUrls)));
+  if (badUrls.length > 0) {
     riskScore += 35;
     redFlags.push({
       id: 'unofficial-domain',
       label: 'Unofficial / Deceptive Link Detected',
       category: 'domain',
       severity: 'high',
-      description: `Links in this message do not point to official Deriv portals (deriv.com). They use deceptive domains, unofficial TLDs, or unencrypted HTTP: ${suspiciousUrls.join(', ')}`,
-      matchedSnippets: suspiciousUrls,
+      description: `Links in this message do not point to official Deriv portals (deriv.com). They use deceptive domains, unofficial TLDs, or unencrypted HTTP: ${badUrls.join(', ')}`,
+      matchedSnippets: badUrls,
     });
-    detailedAnalysis.push(`Detected unofficial or deceptive destination URL: ${suspiciousUrls.join(', ')}. Official Deriv links only end in deriv.com or official deriv apps.`);
+    detailedAnalysis.push(`Detected unofficial or deceptive destination URL: ${badUrls.join(', ')}. Official Deriv links only end in deriv.com or official deriv apps.`);
     officialAdvice.push('Always check the browser address bar. Deriv will only direct you to https://deriv.com or official subdomains.');
+  } else if (externalUrls.length > 0 && !containsLegitDerivDomain) {
+    riskScore += 20;
+    redFlags.push({
+      id: 'external-domain',
+      label: 'Unverified External Third-Party Link',
+      category: 'domain',
+      severity: 'medium',
+      description: `Message directs to external third-party destination not affiliated with official Deriv infrastructure: ${externalUrls.join(', ')}`,
+      matchedSnippets: externalUrls,
+    });
+    detailedAnalysis.push(`Message directs to external third-party domain: ${externalUrls.join(', ')}.`);
   }
 
   // 4. Off-Platform Redirects (Telegram, WhatsApp, personal DMs)
   const offPlatformPatterns = [
-    { regex: /(t\.me\/[a-zA-Z0-9_]+|telegram\.me\/[a-zA-Z0-9_]+|telegram\s+bot|@[\w_]+bot|telegram\s+channel)/i, label: 'Telegram Bot / Handle' },
+    { regex: /(t\.me\/[a-zA-Z0-9_]+|telegram\.me\/[a-zA-Z0-9_]+|telegram\s+(?:bot|channel|group|support|admin)|@[\w_]*(?:bot|deriv|support|official|agent)[\w_]*)/i, label: 'Telegram Bot / Handle' },
     { regex: /(wa\.me\/[0-9]+|whatsapp\.com\/[^\s]+|contact\s+via\s+whatsapp|\+?\d{10,14}\s*(whatsapp)?)/i, label: 'WhatsApp Redirection' },
     { regex: /(contact\s+our\s+agent\s+on\s+(telegram|whatsapp|instagram)|reach\s+out\s+directly\s+to\s+@)/i, label: 'Direct Personal Messaging' },
   ];
@@ -190,8 +267,8 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
 
   // 5. Unrealistic Financial Incentives & Bonus Baits
   const financialBaits = [
-    { regex: /(giveaway|\$?\d+\s*deposit\s*bonus|bonus\s*match|synthetic\s*indices\s*wallet\s*bonus)/i, label: 'Unsolicited Bonus / Giveaway Bait' },
-    { regex: /(guaranteed\s*(daily\s*)?profit|100%\s*win\s*rate|risk-free\s*signals|double\s*your\s*(deposit|money))/i, label: 'Guaranteed Profit / Bot Scam' },
+    { regex: /(giveaway|\$?\d+\s*deposit\s*bonus|bonus\s*match|synthetic\s*indices\s*wallet\s*bonus|anniversary\s+giveaway)/i, label: 'Unsolicited Bonus / Giveaway Bait' },
+    { regex: /(guaranteed\s*(daily\s*)?profit|100%\s*win\s*rate|risk-free\s*signals|double\s*your\s*(deposit|money)|trading\s+bot\s+v\d+)/i, label: 'Guaranteed Profit / Bot Scam' },
     { regex: /(claim\s*limited\s*bonus\s*slot|selected\s*for\s*(the\s*)?deriv\s*vip)/i, label: 'VIP Exclusivity Pressure' },
   ];
 
@@ -218,7 +295,7 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
 
   // 6. Impersonation of Deriv Security / Compliance Officers
   const impersonationPatterns = [
-    { regex: /(senior\s*security\s*agent|deriv\s*security\s*alert|fraud\s*prevention\s*officer|compliance\s*department\s*alert|deriv\s*official\s*support\s*bot)/i, label: 'Official Title Impersonation' },
+    { regex: /(senior\s*security\s*agent|deriv\s*security\s*alert|fraud\s*prevention\s*officer|compliance\s*department\s*alert|deriv\s*official\s*support\s*bot|account\s+investigation\s+officer)/i, label: 'Official Title Impersonation' },
   ];
 
   const impersonationMatches: string[] = [];
@@ -243,17 +320,22 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
   }
 
   // 7. Check for Positive / Safe Indicators
-  const safePatterns = [
+  const safeTextPatterns = [
     { regex: /(deriv\s+(support\s+)?will\s+never\s+ask\s+for\s+your\s+(password|2fa|otp)|never\s+ask\s+for.*2fa|never\s+share\s+your\s+otp)/i, label: 'Explicit Security Warning Included' },
-    { regex: /https:\/\/(app\.)?deriv\.com\/help-centre/i, label: 'Official Deriv Help Centre Link' },
-    { regex: /https:\/\/(app\.)?deriv\.com(\/[^\s]*)?/i, label: 'Authentic HTTPS Deriv Portal URL' },
     { regex: /(monthly\s+(account\s+)?trading\s+statement|statement\s+is\s+now\s+available|new\s+login\s+detected)/i, label: 'Routine Informational Security Notice' },
   ];
 
-  for (const sp of safePatterns) {
+  for (const sp of safeTextPatterns) {
     const match = text.match(sp.regex);
     if (match) {
       safeIndicators.push(match[0]);
+    }
+  }
+
+  // Only award safe URL indicator if the URL is verified official and there are no bad URLs
+  if (officialUrls.length > 0 && badUrls.length === 0 && homoglyphUrls.length === 0) {
+    for (const offUrl of officialUrls) {
+      safeIndicators.push(`Verified official Deriv URL: ${offUrl}`);
     }
   }
 
@@ -287,7 +369,11 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
   } else if (riskLevel === 'SUSPICIOUS') {
     summary = `CAUTION: This message contains ${redFlags.length} suspicious pattern(s). Verify the sender and link destinations directly in your browser before engaging.`;
   } else {
-    summary = 'This message matches legitimate Deriv communication patterns. It directs to official deriv.com domains and does not request credentials.';
+    if (containsLegitDerivDomain || safeIndicators.length > 0) {
+      summary = 'This message matches legitimate Deriv communication patterns. It directs to verified deriv.com portals, includes authentic security notices, and does not harvest credentials.';
+    } else {
+      summary = 'No suspicious indicators, coercive threats, or credential harvesting patterns were detected in this message. Always exercise caution and verify sender authenticity before acting.';
+    }
   }
 
   if (officialAdvice.length === 0) {

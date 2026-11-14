@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AnalysisResult } from '@/types/analyzer';
+import { isOfficialDerivUrl } from '@/lib/detector';
 import { AlertCircle, CheckCircle2, Shield, Link2, ExternalLink, Info, Flame, Eye } from 'lucide-react';
 
 interface AnalysisBreakdownProps {
@@ -107,12 +108,7 @@ export function AnalysisBreakdown({ result }: AnalysisBreakdownProps) {
 
           <div className="space-y-2">
             {detectedLinks.map((url, i) => {
-              const isDerivOfficial =
-                url.includes('deriv.com') &&
-                !url.includes('deriv-') &&
-                !url.includes('.xyz') &&
-                !url.includes('.vip') &&
-                !url.includes('.top');
+              const isDerivOfficial = isOfficialDerivUrl(url);
 
               return (
                 <div
@@ -133,7 +129,7 @@ export function AnalysisBreakdown({ result }: AnalysisBreakdownProps) {
                   <div>
                     {isDerivOfficial ? (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 whitespace-nowrap">
-                        Verified Official Deriv Domain
+                        Verified Official Deriv HTTPS Domain
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 whitespace-nowrap">

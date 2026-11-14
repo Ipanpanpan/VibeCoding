@@ -23,26 +23,22 @@ export function PresetSelector({ selectedPresetId, onSelectPreset }: PresetSelec
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-          <span>⚡ Quick 1-Click Test Presets</span>
-        </label>
-        <span className="text-[11px] text-slate-400">
-          Click any preset to simulate real-world messages
-        </span>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Try an example</h3>
+        <span className="text-xs text-slate-500 dark:text-slate-400">Select to inspect</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {PRESET_MESSAGES.slice(0, 3).map((preset, index) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {PRESET_MESSAGES.map((preset, index) => {
           const isSelected = selectedPresetId === preset.id;
           return (
             <button
               key={preset.id}
               onClick={() => onSelectPreset(preset)}
-              className={`text-left p-3.5 rounded-xl border transition-all relative flex flex-col justify-between group ${
+              className={`text-left p-4 rounded-2xl border transition-all relative flex flex-col justify-between group ${
                 isSelected
-                  ? 'border-[#ff444f] bg-[#ff444f]/5 dark:bg-[#ff444f]/10 shadow-sm'
+                  ? 'border-[#ff444f] bg-[#ff444f]/5 dark:bg-[#ff444f]/10 shadow-sm ring-1 ring-[#ff444f]'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#141923] hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md'
               }`}
             >
@@ -51,7 +47,7 @@ export function PresetSelector({ selectedPresetId, onSelectPreset }: PresetSelec
                   <div className="flex items-center gap-1.5">
                     {getIcon(preset.category)}
                     <span className="text-xs font-semibold text-slate-900 dark:text-white">
-                      Preset {index + 1}
+                      Example {index + 1}
                     </span>
                   </div>
                   <span
@@ -69,7 +65,7 @@ export function PresetSelector({ selectedPresetId, onSelectPreset }: PresetSelec
               </div>
 
               <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-medium text-[#ff444f]">
-                <span>Load & Inspect</span>
+                <span>Use this message</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>

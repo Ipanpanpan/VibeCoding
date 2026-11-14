@@ -77,13 +77,15 @@ export function EducationalGuide({ isOpen, onClose }: EducationalGuideProps) {
               <Globe className="w-4 h-4 text-indigo-500" />
               <span>Official Deriv Whitelist</span>
             </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 'https://deriv.com',
                 'https://app.deriv.com',
                 'https://smarttrader.deriv.com',
                 'https://community.deriv.com',
                 'https://bot.deriv.com',
+                'https://deriv.me',
+                'https://deriv.be',
                 'https://deriv.com/help-centre',
               ].map((domain, i) => (
                 <div

@@ -70,11 +70,53 @@ Output STRICTLY valid JSON conforming to this schema without markdown fences:
       if (geminiResponse.ok) {
         const data = await geminiResponse.json();
         const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (candidateText) {
-          const parsed = JSON.parse(candidateText);
+        if (candidateText && typeof candidateText === 'string') {
+          // Clean possible markdown fences
+          const cleanJson = candidateText
+            .trim()
+            .replace(/^```(?:json)?\s*/i, '')
+            .replace(/\s*```$/i, '')
+            .trim();
+
+          const parsed = JSON.parse(cleanJson);
+          const score = Math.min(100, Math.max(0, typeof parsed.score === 'number' ? parsed.score : localResult.score));
+
+          let riskLevel: 'SAFE' | 'SUSPICIOUS' | 'SCAM' = 'SAFE';
+          if (score >= 65 || parsed.riskLevel === 'SCAM') {
+            riskLevel = 'SCAM';
+          } else if (score >= 25 || parsed.riskLevel === 'SUSPICIOUS') {
+            riskLevel = 'SUSPICIOUS';
+          }
+
+          let badgeText = 'VERIFIED SAFE PATTERN';
+          if (riskLevel === 'SCAM') badgeText = 'HIGH RISK SCAM';
+          else if (riskLevel === 'SUSPICIOUS') badgeText = 'CAUTION / SUSPICIOUS';
+
+          // Combine red flags: ensure high-priority local detections (e.g. homoglyph, credential theft) are preserved
+          const combinedRedFlags = [...(localResult.redFlags || [])];
+          if (Array.isArray(parsed.redFlags)) {
+            for (const aiFlag of parsed.redFlags) {
+              if (aiFlag && !combinedRedFlags.some(f => f.category === aiFlag.category || f.id === aiFlag.id)) {
+                combinedRedFlags.push(aiFlag);
+              }
+            }
+          }
+
           const hybridResult: AnalysisResult = {
-            ...localResult,
-            ...parsed,
+            score,
+            riskLevel,
+            badgeText,
+            summary: typeof parsed.summary === 'string' && parsed.summary ? parsed.summary : localResult.summary,
+            detailedAnalysis: Array.isArray(parsed.detailedAnalysis) && parsed.detailedAnalysis.length > 0
+              ? parsed.detailedAnalysis
+              : localResult.detailedAnalysis,
+            redFlags: combinedRedFlags,
+            safeIndicators: Array.isArray(parsed.safeIndicators) && parsed.safeIndicators.length > 0
+              ? parsed.safeIndicators
+              : localResult.safeIndicators,
+            officialAdvice: Array.isArray(parsed.officialAdvice) && parsed.officialAdvice.length > 0
+              ? parsed.officialAdvice
+              : localResult.officialAdvice,
             detectedLinks: localResult.detectedLinks,
             engineUsed: 'hybrid',
             analyzedAt: new Date().toISOString(),

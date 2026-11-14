@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
+  --background: #ffffff;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
@@ -26,6 +26,40 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
+
+html { scroll-behavior: smooth; }
+
+.site-shell { background: #fff; }
+.dark .site-shell { background: #0b0e14; }
+.hero-section { background: radial-gradient(circle at 78% 45%, #fff1f2 0, #fff 43%); }
+.dark .hero-section { background: radial-gradient(circle at 78% 45%, #251419 0, #0b0e14 48%); }
+.eyebrow { display: inline-flex; align-items: center; gap: .65rem; color: #e43844; font-size: .75rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.eyebrow-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #ff444f; }
+.hero-title { max-width: 760px; font-size: clamp(3rem, 6.4vw, 5.7rem); line-height: 1.04; letter-spacing: -.065em; font-weight: 800; color: #151515; }
+.dark .hero-title { color: #fff; }
+.hero-title span { color: #ff444f; }
+.primary-cta, .secondary-cta { min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: .7rem; padding: .8rem 1.35rem; border-radius: 999px; font-size: .9rem; font-weight: 700; transition: transform .2s, background-color .2s; }
+.primary-cta { color: #fff; background: #ff444f; }
+.primary-cta:hover { background: #db3541; transform: translateY(-2px); }
+.secondary-cta { color: #202024; border: 1px solid #d9d9dd; background: #fff; }
+.secondary-cta:hover { background: #f8f8f8; transform: translateY(-2px); }
+.dark .secondary-cta { color: #f3f3f3; background: #17191e; border-color: #393d45; }
+.hero-visual { min-height: 420px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 40px; background: linear-gradient(150deg, #ff626b 0%, #ec3542 53%, #c91d2c 100%); box-shadow: 0 30px 70px -40px #b3202e88; }
+.hero-visual::before { content: ''; position: absolute; inset: 0; opacity: .35; background: radial-gradient(circle at 18% 12%, #fff 0, transparent 28%), radial-gradient(circle at 80% 85%, #9c1027 0, transparent 40%); }
+.hero-orbit { position: absolute; width: 370px; height: 370px; border: 1px solid #ffffff58; border-radius: 50%; transform: rotate(-25deg) scaleX(1.25); }
+.hero-orbit-two { width: 520px; height: 520px; opacity: .55; }
+.hero-shield { z-index: 1; width: 205px; height: 205px; display: grid; place-items: center; border-radius: 55px; color: #ff444f; background: #fff; transform: rotate(-8deg); box-shadow: 0 28px 50px #8b152e66, inset 0 0 0 12px #fff4f5; }
+.hero-shield svg { width: 116px; height: 116px; transform: rotate(8deg); }
+.hero-float { position: absolute; z-index: 2; display: flex; align-items: center; gap: .65rem; padding: .85rem 1rem; border-radius: 14px; color: #29242a; background: #fff; box-shadow: 0 15px 36px #7c162b44; font-size: .78rem; font-weight: 750; }
+.hero-float svg { color: #ff444f; }
+.hero-float-top { top: 15%; right: 5%; transform: rotate(5deg); }
+.hero-float-bottom { bottom: 14%; left: 5%; transform: rotate(-4deg); }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; }
+.section-heading h2 { max-width: 650px; font-size: clamp(1.85rem, 3.2vw, 3rem); line-height: 1.12; letter-spacing: -.045em; font-weight: 800; }
+.section-heading p { max-width: 360px; color: #64748b; font-size: .92rem; line-height: 1.65; }
+.dark .section-heading p { color: #94a3b8; }
+@media (max-width: 900px) { .section-heading { align-items: start; flex-direction: column; } .hero-visual { min-height: 330px; } }
+@media (max-width: 540px) { .hero-visual { min-height: 290px; border-radius: 28px; } .hero-shield { width: 155px; height: 155px; border-radius: 40px; } .hero-shield svg { width: 90px; height: 90px; } .hero-float { font-size: .65rem; padding: .65rem .75rem; } .hero-float-top { top: 8%; } .hero-float-bottom { bottom: 8%; } }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {

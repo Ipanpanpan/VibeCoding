@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test tests/detector.test.ts"
+    "test": "tsx --test tests/detector.test.ts tests/api.test.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -14,14 +14,14 @@ Send your 6-digit verification OTP or contact our Senior Security Agent @DerivSu
   },
   {
     id: 'preset-2-phishing',
-    name: '$250 VIP Bonus on Unofficial Link',
+    name: 'Fake $250 VIP Deposit Bonus on .xyz link',
     category: 'Suspicious Bonus',
     badge: 'SUSPICIOUS',
     badgeColor: 'bg-amber-500/20 text-amber-500 border-amber-500/30',
-    description: 'Fake high-return anniversary deposit bait hosted on an unofficial .vip domain.',
+    description: 'Fake high-return anniversary deposit bait hosted on an unofficial .xyz domain.',
     text: `Congratulations! You have been selected for the Deriv VIP Trader Anniversary Giveaway! Deposit minimum $50 today and receive an instant $250 bonus match directly into your synthetic indices wallet. 
 
-Claim limited bonus slot before 23:59 GMT: http://deriv-promotions-bonus.vip/claim`,
+Claim limited bonus slot before 23:59 GMT: https://deriv-promotions-bonus.xyz/claim`,
   },
   {
     id: 'preset-3-safe',
