@@ -4,8 +4,8 @@
 > *"Help Customers Recognize a Suspicious Message: A customer receives a message from someone claiming to be support. Build a message-checking tool that points out warning signs and tells the customer how to check safely before acting."*
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-[![Tests Passing](https://img.shields.io/badge/tests-13%2F13%20passing-brightgreen)](https://github.com)
-[![Next.js 14](https://img.shields.io/badge/Next.js-14.2%20App%20Router-black)](https://nextjs.org)
+[![Tests Passing](https://img.shields.io/badge/tests-30%2F30%20passing-brightgreen)](https://github.com)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.4%20App%20Router-black)](https://nextjs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%203.4-38bdf8)](https://tailwindcss.com)
 
 ---
@@ -27,36 +27,36 @@ Or connect your GitHub repository to Vercel. Everything is pre-configured with z
 ## ✨ Features & Architecture
 
 ### 1. Hybrid Threat Detection Engine
-- **Instant Client-Side Heuristics (0ms latency, 100% privacy)**:
+- **On-device pattern scanner (the default)**: Messages stay in the browser unless the user explicitly selects Gemini for a scan.
   - Scans for urgency/freeze ultimatums (e.g. *"account suspended within 2 hours"*).
   - Flags sensitive credential harvesting (e.g. OTP, 2FA, password, seed phrase).
-  - Validates domains against the official Deriv whitelist (`deriv.com`, `app.deriv.com`, `smarttrader.deriv.com`, `community.deriv.com`, etc.) and alerts on deceptive TLDs (`.xyz`, `.vip`, `.top`, etc.).
+  - Checks whether links use HTTPS on `deriv.com` or its subdomains, and flags unrelated or deceptive destinations. A domain match does not verify the sender.
   - Catches off-platform redirection lures (Telegram bots `@DerivSupport_bot`, WhatsApp links, personal social media).
   - Detects financial giveaways, bonus multipliers, and 100% win rate bot lures.
-  - Distinguishes authentic security notices (e.g., *"Deriv will never ask for your password"*).
+  - Recognizes familiar security reminders without treating them as proof that a message is genuine.
 - **Optional Google Gemini AI Hybrid Mode (`/api/analyze`)**:
-  - Leverages Google Gemini 1.5 Flash for natural language reasoning.
-  - Configurable via the in-app Gemini settings modal or `GEMINI_API_KEY` environment variable.
-  - Gracefully falls back to the client-side engine if no key is provided or offline.
+  - Uses Gemini 3.5 Flash only when the user selects it for a scan; that message is sent through this app to Google.
+  - Configurable via a key stored only in the current browser tab or a server-side `GEMINI_API_KEY` environment variable.
+  - Falls back to the on-device scanner with a visible notice if Gemini is unavailable.
 
 ### 2. Interactive User Experience
 - **⚡ 1-Click Test Presets**:
   - **Preset 1**: Urgent Account Suspension & Telegram OTP Lure (*High Risk Scam*)
   - **Preset 2**: Fake $250 VIP Deposit Bonus on `.xyz` link (*Suspicious Phishing*)
-  - **Preset 3**: Legitimate Deriv Monthly Statement (*Verified Safe*)
+  - **Preset 3**: Example Deriv Monthly Statement (*No Flags Found*)
   - **Preset 4**: 100% Win Rate Signal Bot Scam (*High Risk Scam*)
-  - **Preset 5**: Official 2FA Login Notification (*Verified Safe*)
-- **Dynamic Risk Score Gauge (0–100%)**:
-  - `0 - 24%`: `VERIFIED SAFE PATTERN` (Emerald)
+  - **Preset 5**: Example 2FA Login Notification (*No Flags Found*)
+- **Dynamic Warning Sign Score (0–100%)**:
+  - `0 - 24%`: `NO WARNING SIGNS FOUND` (Emerald; sender still unverified)
   - `25 - 64%`: `CAUTION / SUSPICIOUS` (Amber)
   - `65 - 100%`: `HIGH RISK SCAM` (Deriv Coral Red `#ff444f`)
 - **Highlighted Red Flag Chips**:
   - Tagged by severity (`high`, `medium`, `low`) and category (`urgency`, `credential`, `domain`, `redirect`, `financial`, `impersonation`).
   - Displays highlighted trigger quotes directly from the message.
-- **Interactive Safe Verification Checklist**:
-  - 5 interactive steps guiding the customer on inspecting URLs, rejecting OTP requests, ignoring Telegram bots, cross-checking with 24/7 Live Chat, and resisting panic.
+- **Interactive Verification Checklist**:
+  - 5 interactive steps guiding the customer on inspecting URLs, rejecting OTP requests, checking unsolicited support accounts, contacting Deriv through its website, and resisting panic.
 - **Incident Action & Reporting Toolkit**:
-  - Pre-formatted incident reports for Deriv security (`security@deriv.com`).
+  - Copyable and downloadable reports, plus a link to Deriv's official contact page for reporting.
   - 1-click **Copy Safety Advice** to forward to family or trading communities.
   - Downloadable Incident Audit (`.txt`).
 - **Comprehensive Educational Guide & Deriv Whitelist**:
@@ -70,7 +70,7 @@ Or connect your GitHub repository to Vercel. Everything is pre-configured with z
 ## 🛠️ Local Development
 
 ### Prerequisites
-- Node.js 18+ (tested on Node 24)
+- Node.js 20.9+ (tested on Node 24)
 - npm 9+
 
 ### Setup
@@ -97,7 +97,7 @@ npm run dev
 
 ## 🧪 Testing Record
 
-Deriv TrustGuard includes a 13-test automated verification suite (`tests/detector.test.ts`):
+Deriv TrustGuard includes automated detector, API, and UI checks (`tests/`):
 ```bash
 npm test
 ```

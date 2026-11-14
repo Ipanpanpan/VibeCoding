@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Deriv TrustGuard | Suspicious Message & Phishing Verifier',
+  title: 'Deriv TrustGuard | Suspicious Message Checker',
   description: 'DevFest 2026 Vibing Lounge Challenge 03: Help customers recognize suspicious messages, detect warning signs, and verify safely before acting.',
   keywords: ['Deriv', 'Phishing detector', 'Scam verification', 'DevFest 2026', 'Cybersecurity', 'Financial security'],
   authors: [{ name: 'GDG KL DevFest 2026 Vibing Lounge' }],

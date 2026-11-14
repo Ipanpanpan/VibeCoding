@@ -35,7 +35,7 @@ export interface PresetMessage {
   id: string;
   name: string;
   category: 'Scam Phishing' | 'Suspicious Bonus' | 'Official Safe';
-  badge: 'HIGH RISK' | 'SUSPICIOUS' | 'VERIFIED SAFE';
+  badge: 'HIGH RISK' | 'SUSPICIOUS' | 'NO FLAGS FOUND';
   badgeColor: string;
   description: string;
   text: string;

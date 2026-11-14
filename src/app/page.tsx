@@ -19,29 +19,34 @@ import { ArrowDownRight, ArrowUpRight, LockKeyhole, SearchCheck, ShieldCheck } f
 export default function Home() {
   const [message, setMessage] = useState<string>(PRESET_MESSAGES[0].text);
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(PRESET_MESSAGES[0].id);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(() => analyzeMessageLocally(PRESET_MESSAGES[0].text));
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [geminiApiKey, setGeminiApiKey] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
+  const [serverAiAvailable, setServerAiAvailable] = useState(false);
+  const [useAi, setUseAi] = useState(false);
+  const [analyzedMessage, setAnalyzedMessage] = useState(PRESET_MESSAGES[0].text);
+  const [analysisVersion, setAnalysisVersion] = useState(0);
+  const [analysisNotice, setAnalysisNotice] = useState('');
   const riskScoreRef = useRef<HTMLDivElement>(null);
   const shouldScrollToResult = useRef(false);
+  const activeScanRef = useRef(0);
 
-  // Initialize with Preset 1 analyzed on initial render
+  // Discard keys saved by older versions; keep a user key only for this tab.
   useEffect(() => {
-    // Run immediate local analysis
-    const initialResult = analyzeMessageLocally(PRESET_MESSAGES[0].text);
-    setResult(initialResult);
-
-    // Retrieve saved Gemini key if any from localStorage
     try {
-      const savedKey = localStorage.getItem('deriv_guard_gemini_key');
-      if (savedKey) {
-        setGeminiApiKey(savedKey);
-      }
+      localStorage.removeItem('deriv_guard_gemini_key');
+      const savedKey = sessionStorage.getItem('deriv_guard_gemini_key') || '';
+      queueMicrotask(() => setGeminiApiKey(savedKey));
     } catch {
       // ignore
     }
+
+    fetch('/api/analyze')
+      .then(response => response.ok ? response.json() : null)
+      .then(data => setServerAiAvailable(Boolean(data?.serverAiAvailable)))
+      .catch(() => setServerAiAvailable(false));
   }, []);
 
   useEffect(() => {
@@ -60,24 +65,38 @@ export default function Home() {
   }, [isLoading, result]);
 
   const handleSelectPreset = (preset: PresetMessage) => {
+    activeScanRef.current += 1;
+    shouldScrollToResult.current = false;
+    setIsLoading(false);
+    setAnalysisNotice('');
     setMessage(preset.text);
     setSelectedPresetId(preset.id);
     const localRes = analyzeMessageLocally(preset.text);
     setResult(localRes);
+    setAnalyzedMessage(preset.text);
+    setAnalysisVersion(version => version + 1);
   };
 
   const handleMessageChange = (val: string) => {
+    activeScanRef.current += 1;
+    shouldScrollToResult.current = false;
+    setIsLoading(false);
+    setResult(null);
+    setAnalyzedMessage('');
+    setAnalysisNotice('');
     setMessage(val);
     setSelectedPresetId(null);
   };
 
   const handleSaveApiKey = (key: string) => {
     setGeminiApiKey(key);
+    if (key) setUseAi(true);
+    else if (!serverAiAvailable) setUseAi(false);
     try {
       if (key) {
-        localStorage.setItem('deriv_guard_gemini_key', key);
+        sessionStorage.setItem('deriv_guard_gemini_key', key);
       } else {
-        localStorage.removeItem('deriv_guard_gemini_key');
+        sessionStorage.removeItem('deriv_guard_gemini_key');
       }
     } catch {
       // ignore
@@ -86,35 +105,59 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     if (!message.trim()) return;
+    if (message.length > 10_000) {
+      setAnalysisNotice('Please shorten this message to 10,000 characters or fewer.');
+      return;
+    }
+    if (useAi && !geminiApiKey && !serverAiAvailable) {
+      setIsSettingsOpen(true);
+      return;
+    }
 
+    const scannedText = message;
+    const scanId = ++activeScanRef.current;
     shouldScrollToResult.current = true;
+    setAnalysisNotice('');
+
+    const showResult = (nextResult: AnalysisResult, notice = '') => {
+      if (activeScanRef.current !== scanId) return;
+      setResult(nextResult);
+      setAnalyzedMessage(scannedText);
+      setAnalysisVersion(version => version + 1);
+      setAnalysisNotice(notice);
+    };
+
+    if (!useAi) {
+      showResult(analyzeMessageLocally(scannedText));
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Attempt API call (hybrid with Gemini if key is provided)
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
+          message: scannedText,
+          mode: 'ai',
           customApiKey: geminiApiKey || undefined,
         }),
       });
 
       if (res.ok) {
         const data: AnalysisResult = await res.json();
-        setResult(data);
+        showResult(data, data.engineUsed === 'heuristic' ? 'Gemini was unavailable. This result came from the on-device scanner.' : '');
       } else {
-        // Fallback to instant local analysis
-        const local = analyzeMessageLocally(message);
-        setResult(local);
+        showResult(analyzeMessageLocally(scannedText), 'Gemini was unavailable. This result came from the on-device scanner.');
       }
-    } catch (err) {
-      console.warn('API request failed, falling back to local heuristic analysis:', err);
-      const local = analyzeMessageLocally(message);
-      setResult(local);
+    } catch {
+      showResult(analyzeMessageLocally(scannedText), 'Gemini was unavailable. This result came from the on-device scanner.');
     } finally {
-      setIsLoading(false);
+      if (activeScanRef.current === scanId) {
+        setIsLoading(false);
+        setUseAi(false);
+      }
     }
   };
 
@@ -158,19 +201,26 @@ export default function Home() {
           </div>
           <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start">
             <PresetSelector selectedPresetId={selectedPresetId} onSelectPreset={handleSelectPreset} />
-            <MessageInput value={message} onChange={handleMessageChange} onAnalyze={handleAnalyze} isLoading={isLoading} hasCustomKey={Boolean(geminiApiKey)} />
+            <MessageInput value={message} onChange={handleMessageChange} onAnalyze={handleAnalyze} isLoading={isLoading} aiAvailable={Boolean(geminiApiKey) || serverAiAvailable} useAi={useAi} onToggleAi={(enabled) => {
+              if (enabled && !geminiApiKey && !serverAiAvailable) setIsSettingsOpen(true);
+              else setUseAi(enabled);
+            }} />
           </div>
+          {analysisNotice && !result && <p role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">{analysisNotice}</p>}
 
         {/* Dynamic Analysis Results */}
         {result && (
           <div className="space-y-6 animate-fade-in pt-8 border-t border-slate-200 dark:border-slate-800">
             <div className="section-heading"><div><div className="eyebrow mb-3"><span className="eyebrow-dot" /> Analysis result</div><h2>What this message tells us</h2></div><p>Use these signals as a guide. Always confirm through Deriv&apos;s official website or support.</p></div>
-            <div ref={riskScoreRef} tabIndex={-1} className="scroll-mt-24 outline-none"><RiskScoreGauge result={result} /></div>
+            <div ref={riskScoreRef} tabIndex={-1} className="scroll-mt-24 space-y-3 outline-none">
+              {analysisNotice && <p role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">{analysisNotice}</p>}
+              <RiskScoreGauge result={result} />
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               <div className="lg:col-span-7 space-y-6"><AnalysisBreakdown result={result} /></div>
               <div className="lg:col-span-5 space-y-6">
-                <VerificationChecklist />
-                <ActionToolkit result={result} rawMessage={message} />
+                <VerificationChecklist key={analysisVersion} />
+                <ActionToolkit result={result} rawMessage={analyzedMessage} />
               </div>
             </div>
           </div>
@@ -185,12 +235,12 @@ export default function Home() {
       />
 
       {/* Gemini Settings Modal */}
-      <ApiKeyModal
+      {isSettingsOpen && <ApiKeyModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         apiKey={geminiApiKey}
         onSave={handleSaveApiKey}
-      />
+      />}
 
       {/* Footer */}
       <Footer />

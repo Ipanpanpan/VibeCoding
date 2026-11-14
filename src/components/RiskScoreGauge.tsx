@@ -45,7 +45,7 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
           badgeBg: 'bg-emerald-500 text-white shadow-emerald-500/30',
           glowClass: 'glow-emerald',
           icon: <ShieldCheck className="w-4 h-4 text-white shrink-0" />,
-          recommendation: 'SAFE PATTERN: Matches authentic communication protocols and official Deriv guidelines.',
+          recommendation: 'No warning signs found in the text. This cannot verify the sender or guarantee the message is safe.',
         };
     }
   };
@@ -66,7 +66,7 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
     >
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Left: Gauge Circle */}
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <div className="relative flex items-center justify-center">
             <svg
               height={radius * 2}
@@ -107,7 +107,7 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
             </div>
           </div>
 
-          <div>
+          <div className="text-center sm:text-left">
             <div className="flex items-center gap-2 mb-1.5">
               <span
                 className={`text-xs font-black tracking-wider uppercase px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 ${theme.badgeBg}`}
@@ -122,7 +122,7 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span>
-                Engine: {engineUsed === 'hybrid' || engineUsed === 'gemini-ai' ? 'Google Gemini 1.5 Flash AI + Pattern Scanner' : 'Real-Time Heuristic Pattern Scanner (0ms Latency)'}
+                Scanner: {engineUsed === 'hybrid' || engineUsed === 'gemini-ai' ? 'Gemini 3.5 Flash and on-device patterns' : 'On-device patterns'}
               </span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export function RiskScoreGauge({ result }: RiskScoreGaugeProps) {
           </div>
 
           <div className="bg-white/80 dark:bg-[#141923]/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
-            <span className="text-[11px] text-slate-400 block font-medium">Safe Signals</span>
+            <span className="text-[11px] text-slate-400 block font-medium">Familiar Signals</span>
             <span className="text-xl font-bold text-emerald-500">
               {result.safeIndicators.length}
             </span>

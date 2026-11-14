@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ShieldCheck, Moon, Sun, Sparkles, ArrowUpRight, HelpCircle } from 'lucide-react';
 
 interface NavbarProps {
@@ -10,11 +10,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ onOpenSettings, hasCustomKey, onOpenGuide }: NavbarProps) {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
-  }, []);
+  const [isDark, setIsDark] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
 
   const toggleTheme = () => {
     if (isDark) {
@@ -65,7 +61,7 @@ export function Navbar({ onOpenSettings, hasCustomKey, onOpenGuide }: NavbarProp
           >
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span className="hidden sm:inline">
-              {hasCustomKey ? 'Gemini AI Active' : 'Gemini AI (Optional)'}
+              {hasCustomKey ? 'Gemini key ready' : 'Gemini AI (Optional)'}
             </span>
           </button>
 

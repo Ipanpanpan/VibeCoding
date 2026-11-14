@@ -70,7 +70,7 @@ test('4. Preset 3 - Legitimate Deriv monthly statement notice', () => {
 
   const res = analyzeMessageLocally(p3.text);
   assert.equal(res.riskLevel, 'SAFE');
-  assert.equal(res.badgeText, 'VERIFIED SAFE PATTERN');
+  assert.equal(res.badgeText, 'NO WARNING SIGNS FOUND');
   assert.equal(res.score, 0);
   assert.equal(res.redFlags.length, 0);
   assert.ok(res.safeIndicators.length > 0, 'Must detect safe indicators');
@@ -122,7 +122,7 @@ test('9. IDN Homoglyph / Punycode anti-spoofing detection (e.g. Cyrillic i in de
   // Cyrillic small letter byelorussian-ukrainian i (\u0456)
   const homoglyphUrl = 'https://der\u0456v.com/login';
   const res = analyzeMessageLocally(`Please verify your credentials at ${homoglyphUrl}`);
-  assert.equal(res.riskLevel, 'SUSPICIOUS' || res.riskLevel === 'SCAM');
+  assert.ok(res.riskLevel === 'SUSPICIOUS' || res.riskLevel === 'SCAM');
   assert.ok(res.redFlags.some(rf => rf.id === 'homoglyph-spoofing'), 'Must flag IDN homoglyph spoofing attack');
   assert.ok(res.score >= 35, `Expected score >= 35, got ${res.score}`);
 });
@@ -131,8 +131,8 @@ test('10. Strict isOfficialDerivUrl & isOfficialDerivDomain validator', () => {
   assert.equal(isOfficialDerivDomain('deriv.com'), true);
   assert.equal(isOfficialDerivDomain('app.deriv.com'), true);
   assert.equal(isOfficialDerivDomain('smarttrader.deriv.com'), true);
-  assert.equal(isOfficialDerivDomain('deriv.me'), true);
-  assert.equal(isOfficialDerivDomain('deriv.be'), true);
+  assert.equal(isOfficialDerivDomain('deriv.me'), false);
+  assert.equal(isOfficialDerivDomain('deriv.be'), false);
 
   // Impostors
   assert.equal(isOfficialDerivDomain('deriv.com.attacker.com'), false);
@@ -153,7 +153,27 @@ test('11. Generic benign text does not claim it directs to official Deriv domain
   assert.equal(res.riskLevel, 'SAFE');
   assert.equal(res.score, 0);
   assert.equal(res.redFlags.length, 0);
-  assert.ok(!res.summary.includes('It directs to verified deriv.com portals'), 'Benign text must not falsely claim it links to Deriv');
+  assert.match(res.summary, /cannot verify the sender/i);
+});
+
+test('14. Official and unrelated links together still require caution', () => {
+  const res = analyzeMessageLocally('Visit https://app.deriv.com and https://example.org/help for details.');
+  assert.equal(res.riskLevel, 'SUSPICIOUS');
+  assert.ok(res.redFlags.some(flag => flag.id === 'external-domain'));
+  assert.equal(res.safeIndicators.length, 0);
+});
+
+test('16. Bare links with newer domains are inspected', () => {
+  const res = analyzeMessageLocally('Compare app.deriv.com with support-example.dev before acting.');
+  assert.equal(res.riskLevel, 'SUSPICIOUS');
+  assert.ok(res.detectedLinks.includes('support-example.dev'));
+  assert.equal(res.safeIndicators.length, 0);
+});
+
+test('15. A familiar security reminder does not authenticate the sender', () => {
+  const res = analyzeMessageLocally('Deriv will never ask for your password.');
+  assert.equal(res.badgeText, 'NO WARNING SIGNS FOUND');
+  assert.match(res.summary, /does not verify who sent/i);
 });
 
 test('12. Very long message handling (fuzzing boundary test)', () => {

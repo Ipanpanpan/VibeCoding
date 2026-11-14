@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, XCircle, CheckCircle2, Globe, AlertTriangle, BookOpen, ExternalLink } from 'lucide-react';
+import { XCircle, CheckCircle2, Globe, BookOpen } from 'lucide-react';
 
 interface EducationalGuideProps {
   isOpen: boolean;
@@ -49,9 +49,9 @@ export function EducationalGuide({ isOpen, onClose }: EducationalGuideProps) {
                   <span>Legitimate Deriv Team</span>
                 </div>
                 <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-                  <li>• Support only via Live Chat on <strong>deriv.com</strong> or email tickets.</li>
+                  <li>• Find current support options at <strong>deriv.com/contact-us</strong>.</li>
                   <li>• <strong>NEVER</strong> asks for your OTP, password, or card CVV.</li>
-                  <li>• Official domains strictly end in <strong>deriv.com</strong>.</li>
+                  <li>• Check web links carefully and open <strong>deriv.com</strong> yourself.</li>
                   <li>• Formal account issues appear inside your account notifications.</li>
                 </ul>
               </div>
@@ -62,7 +62,7 @@ export function EducationalGuide({ isOpen, onClose }: EducationalGuideProps) {
                   <span>Impostors & Phishers</span>
                 </div>
                 <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-                  <li>• Direct message you via Telegram bots, WhatsApp, or Instagram.</li>
+                  <li>• Send unexpected messages from unverified accounts or numbers.</li>
                   <li>• Demand your 6-digit OTP to &quot;cancel an unauthorized withdrawal&quot;.</li>
                   <li>• Use deceptive domains like <em>deriv-verify.xyz</em> or <em>deriv-vip.top</em>.</li>
                   <li>• Create panic with arbitrary &quot;2 hours before freeze&quot; ultimatums.</li>
@@ -75,7 +75,7 @@ export function EducationalGuide({ isOpen, onClose }: EducationalGuideProps) {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2">
               <Globe className="w-4 h-4 text-indigo-500" />
-              <span>Official Deriv Whitelist</span>
+              <span>Examples of deriv.com links</span>
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
@@ -84,8 +84,6 @@ export function EducationalGuide({ isOpen, onClose }: EducationalGuideProps) {
                 'https://smarttrader.deriv.com',
                 'https://community.deriv.com',
                 'https://bot.deriv.com',
-                'https://deriv.me',
-                'https://deriv.be',
                 'https://deriv.com/help-centre',
               ].map((domain, i) => (
                 <div

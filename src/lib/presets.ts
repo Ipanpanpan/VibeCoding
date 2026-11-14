@@ -25,11 +25,11 @@ Claim limited bonus slot before 23:59 GMT: https://deriv-promotions-bonus.xyz/cl
   },
   {
     id: 'preset-3-safe',
-    name: 'Authentic Deriv Monthly Statement',
+    name: 'Example Deriv Monthly Statement',
     category: 'Official Safe',
-    badge: 'VERIFIED SAFE',
+    badge: 'NO FLAGS FOUND',
     badgeColor: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30',
-    description: 'Standard security-conscious statement reminder with legitimate HTTPS domains and safety notes.',
+    description: 'Statement-style reminder with deriv.com links and safety notes. The sender is not verified.',
     text: `Dear Deriv client, your monthly account trading statement for October 2026 is now available. 
 
 You can log in securely to your account dashboard at https://app.deriv.com or via the official Deriv Bot app to view your trading history. 
@@ -47,11 +47,11 @@ Deriv will never ask for your password, 2FA code, or personal payment details ov
   },
   {
     id: 'preset-5-safe-login',
-    name: 'Official 2FA Login Notification',
+    name: 'Example 2FA Login Notification',
     category: 'Official Safe',
-    badge: 'VERIFIED SAFE',
+    badge: 'NO FLAGS FOUND',
     badgeColor: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30',
-    description: 'Legitimate login alert informing user without demanding replies or sensitive keys.',
+    description: 'Login-alert example that does not demand a reply or sensitive keys. The sender is not verified.',
     text: `New login detected on your Deriv account from Chrome on Windows (IP: 175.140.22.1). If this was you, no action is needed. 
 
 If you did not authorize this session, please review your active devices immediately at https://app.deriv.com/account/security. Remember: Deriv support will never ask for your 2FA OTP code.`,

@@ -3,7 +3,7 @@
 import React from 'react';
 import { AnalysisResult } from '@/types/analyzer';
 import { isOfficialDerivUrl } from '@/lib/detector';
-import { AlertCircle, CheckCircle2, Shield, Link2, ExternalLink, Info, Flame, Eye } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Shield, Link2, Info, Flame } from 'lucide-react';
 
 interface AnalysisBreakdownProps {
   result: AnalysisResult;
@@ -18,7 +18,7 @@ export function AnalysisBreakdown({ result }: AnalysisBreakdownProps) {
       <div className="bg-white dark:bg-[#141923] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           <Info className="w-4 h-4 text-sky-500" />
-          <span>Executive Security Assessment</span>
+          <span>Message check summary</span>
         </div>
         <p className="text-sm md:text-base text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
           {summary}
@@ -129,11 +129,11 @@ export function AnalysisBreakdown({ result }: AnalysisBreakdownProps) {
                   <div>
                     {isDerivOfficial ? (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 whitespace-nowrap">
-                        Verified Official Deriv HTTPS Domain
+                        Matches deriv.com domain
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 whitespace-nowrap">
-                        UNOFFICIAL / HIGH PHISHING RISK
+                        Outside deriv.com — verify independently
                       </span>
                     )}
                   </div>
@@ -149,7 +149,7 @@ export function AnalysisBreakdown({ result }: AnalysisBreakdownProps) {
         <div className="bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="w-4 h-4" />
-            <span>Safe Communication Indicators ({safeIndicators.length})</span>
+            <span>Familiar wording or domain signals ({safeIndicators.length})</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {safeIndicators.map((ind, i) => (
@@ -169,7 +169,7 @@ export function AnalysisBreakdown({ result }: AnalysisBreakdownProps) {
         <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-md space-y-3 border border-slate-800">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
             <Shield className="w-4 h-4" />
-            <span>Recommended Next Actions from Deriv Security</span>
+            <span>Suggested next steps</span>
           </div>
 
           <ul className="space-y-2 text-xs sm:text-sm text-slate-300">

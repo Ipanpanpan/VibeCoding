@@ -2,12 +2,6 @@ import { AnalysisResult, RedFlag, RiskLevel } from '../types/analyzer';
 
 export const OFFICIAL_DERIV_DOMAINS = [
   'deriv.com',
-  'app.deriv.com',
-  'smarttrader.deriv.com',
-  'community.deriv.com',
-  'bot.deriv.com',
-  'deriv.me',
-  'deriv.be',
 ];
 
 export const SUSPICIOUS_TLDS = [
@@ -37,7 +31,7 @@ export function isOfficialDerivUrl(urlStr: string): boolean {
     const hasScheme = clean.startsWith('http://') || clean.startsWith('https://');
     const parsed = new URL(hasScheme ? clean : `https://${clean}`);
 
-    // Official Deriv portals always require HTTPS
+    // Only treat an HTTPS URL on deriv.com or its subdomains as a domain match.
     if (parsed.protocol !== 'https:') return false;
 
     return isOfficialDerivDomain(parsed.hostname);
@@ -48,7 +42,7 @@ export function isOfficialDerivUrl(urlStr: string): boolean {
 
 export function extractUrls(text: string): string[] {
   // Regex to extract URLs or domain names
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.(?:xyz|top|vip|club|buzz|work|online|site|com|net|org|io|ly|co|me|be|app|cc|icu|biz)[^\s]*)/gi;
+  const urlRegex = /(?<![\w@])(?:https?:\/\/[^\s<>]+|www\.[^\s<>]+|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:[/?#][^\s<>]*)?)/gi;
   const matches = text.match(urlRegex) || [];
 
   const cleanedUrls = matches.map(u => {
@@ -63,7 +57,6 @@ export function extractUrls(text: string): string[] {
 
 export function analyzeMessageLocally(rawText: string): AnalysisResult {
   const text = rawText.trim();
-  const lower = text.toLowerCase();
   const redFlags: RedFlag[] = [];
   const safeIndicators: string[] = [];
   const detailedAnalysis: string[] = [];
@@ -221,16 +214,19 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
       description: `Links in this message do not point to official Deriv portals (deriv.com). They use deceptive domains, unofficial TLDs, or unencrypted HTTP: ${badUrls.join(', ')}`,
       matchedSnippets: badUrls,
     });
-    detailedAnalysis.push(`Detected unofficial or deceptive destination URL: ${badUrls.join(', ')}. Official Deriv links only end in deriv.com or official deriv apps.`);
+    detailedAnalysis.push(`Detected an unofficial or deceptive destination URL: ${badUrls.join(', ')}. Open deriv.com yourself and verify the request before acting.`);
     officialAdvice.push('Always check the browser address bar. Deriv will only direct you to https://deriv.com or official subdomains.');
-  } else if (externalUrls.length > 0 && !containsLegitDerivDomain) {
-    riskScore += 20;
+  }
+
+  // An unrelated destination still needs review when an official link also appears.
+  if (externalUrls.length > 0) {
+    riskScore += 25;
     redFlags.push({
       id: 'external-domain',
       label: 'Unverified External Third-Party Link',
       category: 'domain',
       severity: 'medium',
-      description: `Message directs to external third-party destination not affiliated with official Deriv infrastructure: ${externalUrls.join(', ')}`,
+      description: `This message also includes a link outside deriv.com. Its destination has not been verified: ${externalUrls.join(', ')}`,
       matchedSnippets: externalUrls,
     });
     detailedAnalysis.push(`Message directs to external third-party domain: ${externalUrls.join(', ')}.`);
@@ -258,11 +254,11 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
       label: 'Off-Platform Telegram/WhatsApp Lure',
       category: 'redirect',
       severity: 'high',
-      description: 'Official Deriv customer support NEVER operates via external Telegram bots, WhatsApp numbers, or private direct messages.',
+      description: 'An unsolicited messaging account or number claiming to be support needs independent verification. Use contact options reached from deriv.com/contact-us.',
       matchedSnippets: offPlatformMatches,
     });
-    detailedAnalysis.push('The message redirects communication to an unofficial external platform (Telegram / WhatsApp) where transactions cannot be verified.');
-    officialAdvice.push('Deriv support is ONLY available through the official Live Chat at deriv.com or verified email tickets.');
+    detailedAnalysis.push('The message asks you to move to a messaging account or number that you should verify independently.');
+    officialAdvice.push('Open deriv.com/contact-us yourself and use a contact option listed there to verify this request.');
   }
 
   // 5. Unrealistic Financial Incentives & Bonus Baits
@@ -332,24 +328,26 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
     }
   }
 
-  // Only award safe URL indicator if the URL is verified official and there are no bad URLs
-  if (officialUrls.length > 0 && badUrls.length === 0 && homoglyphUrls.length === 0) {
+  // A domain match is a useful signal, but does not authenticate the message or sender.
+  if (officialUrls.length > 0 && badUrls.length === 0 && homoglyphUrls.length === 0 && externalUrls.length === 0) {
     for (const offUrl of officialUrls) {
-      safeIndicators.push(`Verified official Deriv URL: ${offUrl}`);
+      safeIndicators.push(`Link matches a deriv.com domain: ${offUrl}`);
     }
   }
 
   // Scoring adjustment if legitimate pattern & zero high-risk flags
   if (redFlags.length === 0 && (containsLegitDerivDomain || safeIndicators.length > 0)) {
     riskScore = Math.max(0, riskScore - 20);
-    detailedAnalysis.push('Contains authentic Deriv domain links and standard informational security reminders.');
+    detailedAnalysis.push('Contains a deriv.com link or a familiar security reminder; the sender still needs independent verification.');
   }
 
+  if (redFlags.length > 0) safeIndicators.length = 0;
+
   // Normalize score between 0 and 100
-  const normalizedScore = Math.min(100, Math.max(0, riskScore));
+  const normalizedScore = Math.min(100, Math.max(redFlags.length > 0 ? 25 : 0, riskScore));
 
   let riskLevel: RiskLevel = 'SAFE';
-  let badgeText = 'VERIFIED SAFE PATTERN';
+  let badgeText = 'NO WARNING SIGNS FOUND';
 
   if (normalizedScore >= 65) {
     riskLevel = 'SCAM';
@@ -359,7 +357,7 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
     badgeText = 'CAUTION / SUSPICIOUS';
   } else {
     riskLevel = 'SAFE';
-    badgeText = 'VERIFIED SAFE PATTERN';
+    badgeText = 'NO WARNING SIGNS FOUND';
   }
 
   // Generate plain-English summary
@@ -370,9 +368,9 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
     summary = `CAUTION: This message contains ${redFlags.length} suspicious pattern(s). Verify the sender and link destinations directly in your browser before engaging.`;
   } else {
     if (containsLegitDerivDomain || safeIndicators.length > 0) {
-      summary = 'This message matches legitimate Deriv communication patterns. It directs to verified deriv.com portals, includes authentic security notices, and does not harvest credentials.';
+      summary = 'No warning signs were found in the text. A deriv.com link or familiar wording does not verify who sent the message; check with Deriv before acting.';
     } else {
-      summary = 'No suspicious indicators, coercive threats, or credential harvesting patterns were detected in this message. Always exercise caution and verify sender authenticity before acting.';
+      summary = 'No warning signs were found by this scanner. It cannot verify the sender or guarantee the message is safe; check with Deriv before acting.';
     }
   }
 
@@ -381,7 +379,7 @@ export function analyzeMessageLocally(rawText: string): AnalysisResult {
       officialAdvice.push('Always check that your browser address bar displays "https://deriv.com" or official subdomains.');
       officialAdvice.push('Access your account by typing deriv.com directly into your browser rather than clicking email links.');
     } else {
-      officialAdvice.push('Forward this message to security@deriv.com to alert Deriv Anti-Fraud operations.');
+      officialAdvice.push('Report the suspicious message through live chat reached from deriv.com/contact-us.');
       officialAdvice.push('If you already entered your credentials, immediately log in to https://app.deriv.com and reset your password & revoke active sessions.');
     }
   }

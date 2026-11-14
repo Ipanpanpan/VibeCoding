@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { AnalysisResult } from '@/types/analyzer';
-import { Mail, Copy, Check, Download, Share2, ShieldAlert } from 'lucide-react';
+import { ExternalLink, Copy, Check, Download, Share2 } from 'lucide-react';
 
 interface ActionToolkitProps {
   result: AnalysisResult;
@@ -15,12 +15,12 @@ export function ActionToolkit({ result, rawMessage, compact = false }: ActionToo
   const [copiedReport, setCopiedReport] = useState(false);
 
   const generateReportText = () => {
-    return `[SUSPICIOUS MESSAGE INCIDENT REPORT]
+    return `[MESSAGE CHECK REPORT]
 Timestamp: ${result.analyzedAt}
 Risk Level: ${result.badgeText} (Score: ${result.score}/100)
 Engine: ${result.engineUsed}
 
-SUSPICIOUS MESSAGE CONTENT:
+MESSAGE ANALYZED:
 ----------------------------------------
 ${rawMessage}
 ----------------------------------------
@@ -31,13 +31,13 @@ ${result.redFlags.map(rf => `- [${rf.severity.toUpperCase()}] ${rf.label}: ${rf.
 DETECTED LINKS:
 ${result.detectedLinks.length > 0 ? result.detectedLinks.map(l => `- ${l}`).join('\n') : 'None'}
 
-DERIV OFFICIAL SECURITY ADVICE:
+SUGGESTED NEXT STEPS:
 ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
 `;
   };
 
   const handleCopyAdvice = async () => {
-    const textToCopy = `🛡️ Deriv Security Alert Advice:\n\n${result.summary}\n\nOfficial Deriv Advice:\n${result.officialAdvice.map(a => `• ${a}`).join('\n')}\n\nRemember: Deriv staff NEVER ask for your OTP or password, and never handle support via unofficial Telegram bots!`;
+    const textToCopy = `🛡️ Message check:\n\n${result.summary}\n\nSuggested next steps:\n${result.officialAdvice.map(a => `• ${a}`).join('\n')}\n\nNever share a password or one-time code. Verify requests through contact options reached from deriv.com/contact-us.`;
     try {
       await navigator.clipboard.writeText(textToCopy);
       setCopiedAdvice(true);
@@ -57,12 +57,6 @@ ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
     }
   };
 
-  const handleMailtoReport = () => {
-    const subject = encodeURIComponent(`[Phishing Alert Report] Suspicious Deriv Message Detected (${result.badgeText})`);
-    const body = encodeURIComponent(generateReportText());
-    window.location.href = `mailto:security@deriv.com?subject=${subject}&body=${body}`;
-  };
-
   const handleDownloadReport = () => {
     const report = generateReportText();
     const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
@@ -78,18 +72,19 @@ ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
     <div className="bg-white dark:bg-[#141923] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
         <Share2 className="w-4 h-4 text-[#ff444f]" />
-        <span>Incident Action & Reporting Toolkit</span>
+        <span>What you can do next</span>
       </div>
 
       <div className={`grid grid-cols-1 gap-2.5 ${compact ? '' : 'sm:grid-cols-3'}`}>
-        {/* Report to Deriv Security */}
-        <button
-          onClick={handleMailtoReport}
+        <a
+          href="https://deriv.com/contact-us"
+          target="_blank"
+          rel="noopener noreferrer"
           className="p-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-500/5 hover:bg-red-500/10 text-red-600 dark:text-red-400 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
         >
-          <Mail className="w-4 h-4" />
-          <span>Email security@deriv.com</span>
-        </button>
+          <ExternalLink className="w-4 h-4" />
+          <span>Contact Deriv on its website</span>
+        </a>
 
         {/* Copy Safety Advice */}
         <button
@@ -115,17 +110,17 @@ ${result.officialAdvice.map(a => `- ${a}`).join('\n')}
           className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
         >
           <Download className="w-4 h-4" />
-          <span>Download Incident Audit</span>
+          <span>Download check report</span>
         </button>
       </div>
 
       <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-        <span>Need to copy raw report for support tickets?</span>
+        <span>Review the message before sharing it with support.</span>
         <button
           onClick={handleCopyReport}
           className="text-[#ff444f] hover:underline font-medium"
         >
-          {copiedReport ? '✓ Report text copied' : 'Copy Full Audit Text'}
+          {copiedReport ? '✓ Report text copied' : 'Copy full report'}
         </button>
       </div>
     </div>

@@ -8,7 +8,9 @@ interface MessageInputProps {
   onChange: (val: string) => void;
   onAnalyze: () => void;
   isLoading: boolean;
-  hasCustomKey: boolean;
+  aiAvailable: boolean;
+  useAi: boolean;
+  onToggleAi: (enabled: boolean) => void;
 }
 
 export function MessageInput({
@@ -16,7 +18,9 @@ export function MessageInput({
   onChange,
   onAnalyze,
   isLoading,
-  hasCustomKey,
+  aiAvailable,
+  useAi,
+  onToggleAi,
 }: MessageInputProps) {
   const [copiedNotification, setCopiedNotification] = useState(false);
 
@@ -43,7 +47,7 @@ export function MessageInput({
   return (
     <div className="bg-white dark:bg-[#141923] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+        <label htmlFor="message-content" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <ShieldAlert className="w-4 h-4 text-[#ff444f]" />
           <span>Suspicious Message Content</span>
         </label>
@@ -73,9 +77,11 @@ export function MessageInput({
           )}
         </div>
       </div>
+      {characterCount > 10_000 && <p role="alert" className="text-xs font-medium text-red-600">Please shorten this message to 10,000 characters or fewer.</p>}
 
       <div className="relative">
         <textarea
+          id="message-content"
           rows={6}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -90,24 +96,39 @@ export function MessageInput({
         )}
       </div>
 
+      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+          <input type="checkbox" checked={useAi} onChange={(event) => onToggleAi(event.target.checked)} className="h-4 w-4 accent-[#ff444f]" />
+          <Sparkles className="h-4 w-4 text-amber-500" aria-hidden="true" />
+          Use Gemini for this scan
+        </label>
+        <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+          {useAi
+            ? 'Your message will be sent through this app to Google Gemini. Remove passwords, codes, and personal details before scanning.'
+            : aiAvailable
+              ? 'Default: scan on this device. Your message is not sent to the server.'
+              : 'Default: scan on this device. Select Gemini to add a key for this tab.'}
+        </p>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <div className="flex items-center gap-2">
-          {hasCustomKey ? (
+          {useAi ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <Sparkles className="w-3.5 h-3.5" />
-              Gemini 1.5 Flash AI Engine Active
+              Gemini selected for this scan
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
               <Cpu className="w-3.5 h-3.5 text-[#ff444f]" />
-              Client Heuristics & Pattern Engine (Offline-Safe)
+              On-device pattern scanner
             </span>
           )}
         </div>
 
         <button
           onClick={onAnalyze}
-          disabled={isLoading || !value.trim()}
+          disabled={isLoading || !value.trim() || value.length > 10_000}
           className="px-6 py-2.5 rounded-xl bg-[#ff444f] hover:bg-[#d43640] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-[#ff444f]/25 transition-all transform active:scale-98"
         >
           {isLoading ? (

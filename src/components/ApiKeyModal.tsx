@@ -35,6 +35,7 @@ export function ApiKeyModal({ isOpen, onClose, apiKey, onSave }: ApiKeyModalProp
       <div className="bg-white dark:bg-[#141923] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
         <button
           onClick={onClose}
+          aria-label="Close Gemini settings"
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <X className="w-5 h-5" />
@@ -56,8 +57,7 @@ export function ApiKeyModal({ isOpen, onClose, apiKey, onSave }: ApiKeyModalProp
 
         <div className="space-y-4">
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            By default, Deriv TrustGuard runs an <strong>instant client-side heuristic engine</strong> with 0ms latency and 100% privacy. 
-            If you want Gemini 1.5 Flash to generate context-aware threat reasoning, enter your API key below.
+            The default scan runs in this browser without sending the message to the server. If you select Gemini for a scan, the message goes through this app to Google. A key you enter here is kept only in this browser tab.
           </p>
 
           <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 space-y-1">

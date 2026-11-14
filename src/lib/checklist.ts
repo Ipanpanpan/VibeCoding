@@ -4,7 +4,7 @@ export const INITIAL_CHECKLIST_STEPS: VerificationStep[] = [
   {
     id: 'verify-domain',
     title: '1. Inspect the Website URL & Domain',
-    description: 'Ensure the link begins with "https://" and the host ends strictly in "deriv.com" (e.g. app.deriv.com or deriv.com/help-centre).',
+    description: 'Check whether the link uses HTTPS and its host is deriv.com or a subdomain such as app.deriv.com. A matching link does not prove who sent the message.',
     officialGuidance: 'Scammers frequently register domains like deriv-secure.xyz or deriv-bonus.vip. Never enter your credentials on any unofficial domain.',
     completed: false,
   },
@@ -18,15 +18,15 @@ export const INITIAL_CHECKLIST_STEPS: VerificationStep[] = [
   {
     id: 'verify-no-off-platform',
     title: '3. Verify Communication Channel',
-    description: 'Is the sender asking you to chat on Telegram (@bot), WhatsApp, or personal social media?',
-    officialGuidance: 'Deriv never handles account issues, security alerts, or withdrawals via Telegram or WhatsApp bots. All communications occur on deriv.com.',
+    description: 'Did an unsolicited account or number ask you to move the conversation to a messaging app?',
+    officialGuidance: 'Check the contact options listed at deriv.com/contact-us yourself. Do not trust a number or account supplied only in the message.',
     completed: false,
   },
   {
     id: 'verify-live-chat',
     title: '4. Direct Cross-Check with Official Support',
-    description: 'Open a new browser tab, manually type "deriv.com", and ask Official Live Chat if the alert is legitimate.',
-    officialGuidance: 'Deriv 24/7 Live Chat can look up your real account ID to immediately verify if any genuine security holds exist.',
+    description: 'Open a new browser tab, type "deriv.com/contact-us", and use a contact option listed there to ask if the alert is genuine.',
+    officialGuidance: 'Deriv directs suspicious-message reports and verification requests to support reached through its official website.',
     completed: false,
   },
   {

@@ -29,7 +29,7 @@ export function VerificationChecklist() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-emerald-500" />
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Interactive Safe Verification Checklist
+              Check before acting
             </h3>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -40,7 +40,7 @@ export function VerificationChecklist() {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              {completedCount} of {steps.length} Verified
+              {completedCount} of {steps.length} Checked
             </span>
             <div className="w-28 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1">
               <div
@@ -68,7 +68,7 @@ export function VerificationChecklist() {
         <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 animate-fade-in">
           <Sparkles className="w-5 h-5 text-emerald-500 shrink-0" />
           <div className="text-xs text-emerald-800 dark:text-emerald-300">
-            <strong>Checklist Complete!</strong> You have thoroughly inspected the key threat vectors. You are empowered to make a safe, informed decision.
+            <strong>Checklist complete.</strong> You have reviewed these steps. If you are unsure, contact Deriv through its official website before acting.
           </div>
         </div>
       )}
@@ -88,7 +88,7 @@ export function VerificationChecklist() {
               <button
                 type="button"
                 className="mt-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0"
-                aria-label={step.completed ? 'Mark unverified' : 'Mark verified'}
+              aria-label={step.completed ? 'Mark unchecked' : 'Mark checked'}
               >
                 {step.completed ? (
                   <CheckSquare className="w-5 h-5 text-emerald-500" />
